@@ -1,6 +1,8 @@
 
 import Pact from 'pact-lang-api'
 
+import fs from 'fs';
+
 
 var mpad = function (x) {
     while (x.length < 8) {
@@ -40,12 +42,15 @@ const mymeta = function (acc, c_id) {
 
 }
 var mnet = "mainnet01"
-// mnet = "testnet04"
 var cid = "13"
-// cid = "1"
-
+var is_testnet = ""
 var apihost = "https://api.chainweb.com/chainweb/0.0/mainnet01/chain/13/pact"
-// apihost = "https://api.testnet.chainweb.com/chainweb/0.0/testnet04/chain/1/pact"
+if (process.argv[3] != undefined && process.argv[3] == "testnet") {
+    is_testnet = "TESTNET-"
+    mnet = "testnet04"
+    cid = "1"
+    apihost = "https://api.testnet.chainweb.com/chainweb/0.0/testnet04/chain/1/pact"
+}
 
 var mcmd = {
     type: "exec",
@@ -62,8 +67,8 @@ console.log("LOADING NFT #" + process.argv[2])
 
 
 Pact.fetch.local(mcmd, apihost).then(x => {
-    var tmp = x.result.data
-    var curhash = tmp.curhash
+    var tmpx = x.result.data
+    var curhash = tmpx.curhash
     var strongest_nonce_strength = curhashstrength(curhash)
     var guess = ""
     var tmp = ""
@@ -77,22 +82,31 @@ Pact.fetch.local(mcmd, apihost).then(x => {
                 tmp = Pact.crypto.hash(curhash + "" + guess)
                 strongest_nonce_strength = curhashstrength(tmp)
                 console.log("miner", "fnd")
-
-                console.log({
+                var content = {
                     res: "found", data: {
                         nonce: guess
-                        , strength: strongest_nonce_strength
+                        , newstrength: strongest_nonce_strength
                         , curhash: curhash
                         , nexthash: tmp
                     }
-                })
+                }
+                console.log(content)
+
+
+                fs.writeFileSync('./' + is_testnet + 'NFT-' + process.argv[2] + "-" + get_nonce() + ".txt", JSON.stringify(content, null, 4), err => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    // file written successfully
+                });
+
                 process.exit(0)
             }
             guess = makeid(Math.floor(Math.random() * 1023) + 1)
         }
         t += 1
         console.clear()
-        console.log(t,guess)
+        console.log(tmpx, "\n", t, guess.slice(0, 10)+" ...")
         setTimeout(() => {
             mdo()
         }, 150);
