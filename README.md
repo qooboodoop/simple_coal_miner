@@ -1,10 +1,10 @@
-# Install
+## Install
 
 ```bash
 npm install
 ```
 
-# Usage
+## Usage
 
 ```bash
 node index.mjs "<NFT ID>"
