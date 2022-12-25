@@ -1,4 +1,10 @@
+## requirements
+
+NodeJS
+
 ## Install
+
+
 
 ```bash
 npm install
