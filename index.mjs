@@ -1,6 +1,5 @@
 
 import Pact from 'pact-lang-api'
-
 import fs from 'fs';
 
 
@@ -81,11 +80,11 @@ Pact.fetch.local(mcmd, apihost).then(x => {
             if (curhashstrength(Pact.crypto.hash(curhash + "" + guess)) > strongest_nonce_strength) {
                 tmp = Pact.crypto.hash(curhash + "" + guess)
                 strongest_nonce_strength = curhashstrength(tmp)
-                console.log("miner", "fnd")
+                // console.log("miner", "fnd")
                 var content = {
-                    res: "found", data: {
+                    result: "found", data: {
                         nonce: guess
-                        , newstrength: strongest_nonce_strength
+                        , "new-strength": strongest_nonce_strength
                         , curhash: curhash
                         , nexthash: tmp
                     }
@@ -93,20 +92,21 @@ Pact.fetch.local(mcmd, apihost).then(x => {
                 console.log(content)
 
 
-                fs.writeFileSync('./' + is_testnet + 'NFT-' + process.argv[2] + "-" + get_nonce() + ".txt", JSON.stringify(content, null, 4), err => {
+                fs.writeFile('' + is_testnet + 'NFT-' + process.argv[2] + "-" + get_nonce().split(" ").join("-").split(",").join("-").split(":").join("-") + ".txt", JSON.stringify(content, null, 4), err => {
                     if (err) {
                         console.error(err);
                     }
+                    process.exit()
                     // file written successfully
                 });
 
-                process.exit(0)
+
             }
             guess = makeid(Math.floor(Math.random() * 1023) + 1)
         }
         t += 1
         console.clear()
-        console.log(tmpx, "\n", t, guess.slice(0, 10)+" ...")
+        console.log("Mining NFT#", tmpx.id.int," - round:", t, guess.slice(0, 10) + " ...")
         setTimeout(() => {
             mdo()
         }, 150);
