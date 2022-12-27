@@ -1,16 +1,26 @@
-## requirements
+## Requirements
 
-NodeJS
-
-## Install
+Install [NodeJS](https://nodejs.org/en/download/) 
 
 
+
+## Windows
+
+First execute ```install.bat```
+
+Then execute the ```start.bat``` and follow instructions
+
+
+## Linux
+
+
+### Install
 
 ```bash
 npm install
 ```
 
-## Usage
+### Usage
 
 ```bash
 
