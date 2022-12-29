@@ -42,6 +42,7 @@ const mymeta = function (acc, c_id) {
 }
 var mnet = "mainnet01"
 var cid = "13"
+var hashes_per_round = 10000
 var is_testnet = ""
 var apihost = "https://api.chainweb.com/chainweb/0.0/mainnet01/chain/13/pact"
 if (process.argv[3] != undefined && process.argv[3] == "testnet") {
@@ -61,61 +62,76 @@ var mcmd = {
     networkId: mnet
 
 }
-console.log("LOADING NFT #" + process.argv[2])
+fs.readFile("miner-config.json", 'utf-8', function (err, data) {
+    if (!err) {
+        console.log(data);
+        console.log("LOADING NFT #" + process.argv[2])
 
-
-
-Pact.fetch.local(mcmd, apihost).then(x => {
-    var tmpx = x.result.data
-    var curhash = tmpx.curhash
-    var strongest_nonce_strength = curhashstrength(curhash)
-    var guess = ""
-    var tmp = ""
-    var t = 0
-
-    var mdo = function () {
-        var c = 0
-        while (c < 10000) {
-            c += 1
-            if (curhashstrength(Pact.crypto.hash(curhash + "" + guess)) > strongest_nonce_strength) {
-                tmp = Pact.crypto.hash(curhash + "" + guess)
-                strongest_nonce_strength = curhashstrength(tmp)
-                // console.log("miner", "fnd")
-                var content = {
-                    result: "found", data: {
-                        nonce: guess
-                        , "new-strength": strongest_nonce_strength
-                        , curhash: curhash
-                        , nexthash: tmp
-                    }
-                }
-                console.log(content)
-
-
-                fs.writeFile('' + is_testnet + 'NFT-' + process.argv[2] + "-" + get_nonce().split(" ").join("-").split(",").join("-").split(":").join("-") + ".txt", JSON.stringify(content, null, 4), err => {
-                    if (err) {
-                        console.error(err);
-                    }
-                    process.exit()
-                    // file written successfully
-                });
-
-
-            }
-            guess = makeid(Math.floor(Math.random() * 1023) + 1)
+        var config = JSON.parse(data)
+        if (config.hashes_per_round != undefined) {
+            hashes_per_round = config.hashes_per_round
         }
-        t += 1
-        console.clear()
-        console.log("Mining NFT#", tmpx.id.int," - round:", t, guess.slice(0, 10) + " ...")
-        setTimeout(() => {
-            mdo()
-        }, 150);
+
+        Pact.fetch.local(mcmd, apihost).then(x => {
+            var tmpx = x.result.data
+            var curhash = tmpx.curhash
+            var strongest_nonce_strength = curhashstrength(curhash)
+            var guess = ""
+            var tmp = ""
+            var t = 0
+
+            var mdo = function () {
+                var c = 0
+                while (c < hashes_per_round) {
+                    c += 1
+                    if (curhashstrength(Pact.crypto.hash(curhash + "" + guess)) > strongest_nonce_strength) {
+                        tmp = Pact.crypto.hash(curhash + "" + guess)
+                        strongest_nonce_strength = curhashstrength(tmp)
+                        // console.log("miner", "fnd")
+                        var content = {
+                            result: "found", data: {
+                                nonce: guess
+                                , "new-strength": strongest_nonce_strength
+                                , curhash: curhash
+                                , nexthash: tmp
+                            }
+                        }
+
+
+
+                        fs.writeFile('' + is_testnet + 'NFT-' + process.argv[2] + "-" + get_nonce().split(" ").join("-").split(",").join("-").split(":").join("-") + ".txt", JSON.stringify(content, null, 4), err => {
+                            if (err) {
+                                console.error(err);
+                            }
+                            setTimeout((x) => {
+                                console.log(x)
+                                process.exit()
+                            }, 1000, content);
+                            // file written successfully
+                        });
+
+
+                    }
+                    guess = makeid(Math.floor(Math.random() * 1023) + 1)
+                }
+                t += 1
+                console.clear()
+                console.log("Mining NFT#", tmpx.id.int, " - round:", t, guess.slice(0, 10) + " ...")
+                setTimeout(() => {
+                    mdo()
+                }, 50);
+            }
+
+            setTimeout(() => {
+                mdo()
+            }, 1);
+        })
+
+
+
+
+    } else {
+        console.log(err);
     }
-
-    setTimeout(() => {
-        mdo()
-    }, 1);
-})
-
-
+});
 
