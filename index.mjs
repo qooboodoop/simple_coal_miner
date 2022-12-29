@@ -92,6 +92,7 @@ fs.readFile("miner-config.json", 'utf-8', function (err, data) {
                             result: "found", data: {
                                 nonce: guess
                                 , "new-strength": strongest_nonce_strength
+                                , "old-strength": curhashstrength(curhash)
                                 , curhash: curhash
                                 , nexthash: tmp
                             }
